@@ -8,7 +8,7 @@ numbers.
 
 The output from both is EBCDIC and should be uploaded
 ```
-site fix 8
+site fix 80
 bin
 ```
 `txtlib` generates a CMS TXTLIB from S/360 TEXT decks, which are
