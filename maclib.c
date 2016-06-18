@@ -112,7 +112,7 @@ main(int argc, char ** argv)
       {
          s = fgets(line, sizeof(line), f);
          if (!s) break;
-         if (!ismacro && memcmp(s, "*COPY ", 5))
+         if (!ismacro && !memcmp(s, "*COPY ", 5))
          {
             if (eom()) return 20;
             if (newmember(s)) return 20;
@@ -140,7 +140,8 @@ newmember(char * s)
    s += 5;
    s += strspn(s, " ");
    t = strpbrk(s, " ");
-   return loadname(s, t - s);
+
+   return loadname(s, t ? t - s : strlen(s));
 }
 
 /*********************************************************************/

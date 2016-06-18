@@ -45,6 +45,12 @@ check: txtlib maclib
 		./maclib 390.maclib run390.copy ;	\
 		echo 390 copy $$? >&2;				 \
 		od -t x1 -A x 390.maclib >&2; 	\
+		./maclib stacked.maclib stacked.copy ;   \
+		echo 390 stacked copy $$? >&2;				\
+		od -t x1 -A x stacked.maclib >&2;	 \
+		./maclib notstacked.maclib notstacked.copy ;   \
+		echo 390 notstacked copy $$? >&2;				\
+		od -t x1 -A x notstacked.maclib >&2;	 \
 	) 2>stderr >stdout
 	@ diff -u stdout.ok stdout && diff -u stderr.ok stderr
 	@echo '>>> all pass <<<'
