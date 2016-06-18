@@ -23,8 +23,8 @@ as individual members.
 The directory contains an entry for each control section (SD) and each
 entry (LD).
 
-`maclib` geneates an EBCDIC macro library from variable length
-ASCII files.
+`maclib` geneates an EBCDIC macro library in code page 1047 from variable length
+ASCII files in code page 819, Western Europe.
 Stacked copy (`*COPY` member delimiters) is supported for
 files that have a `.copy` extension if the first line
 of the file is such
