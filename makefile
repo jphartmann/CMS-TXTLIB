@@ -1,25 +1,27 @@
+.PHONY: all check ok stdok clean stdok errok
 CFLAGS:=-Wall -Werror -g
-.PHONY: all check ok stdok clean
 
-all: txtlib
+B:=${HOME}/bin
+H:=objdeck.h libpds.h subs.c
 
-txtlib: objdeck.h
-
-install: ${HOME}/bin/txtlib | ${HOME}/bin
-
-${HOME}/bin/txtlib: txtlib
+$B/%: %
 	cp -p $< $@
 
-${HOME}/bin:
+all: txtlib maclib
+
+txtlib.o: $H
+maclib.o: $H
+
+install: $B/maclib $B/txtlib | $B
+
+$B:
 	mkdir $@
 
 clean:
-	rm -f txtlib *.txtlib core stderr stdout
+	rm -f maclib txtlib *.o *.txtlib *.maclib core stderr stdout
 
-$HOME/bin:
-	mkdir ${HOM}/bin
-
-check: txtlib
+check: txtlib maclib
+	rm -f core
 	- @ ( 											 \
 		./txtlib;								 \
 		echo No args $$? >&2;				\
@@ -40,12 +42,17 @@ check: txtlib
 		./txtlib 253.txtlib 253cards.text ;   \
 		echo 253 cards $$? >&2; 			  \
 		od -t x1 -A x 253.txtlib >&2; 	\
+		./maclib 390.maclib run390.copy ;	\
+		echo 390 copy $$? >&2;				 \
+		od -t x1 -A x 390.maclib >&2; 	\
 	) 2>stderr >stdout
 	@ diff -u stdout.ok stdout && diff -u stderr.ok stderr
 	@echo '>>> all pass <<<'
 
-ok: stdok
-	mv stderr stderr.ok
+ok: outok
 
-stdok:
+outok:
 	mv stdout stdout.ok
+
+errok:
+	mv stderr stderr.ok

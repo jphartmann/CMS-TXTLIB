@@ -1,0 +1,166 @@
+.* Copy  file  containing  stuff  that  is  used  both  by  the
+.* interface module and low-level routines that are called from
+.* the library.
+
+.* Symbols should be treated as mixed case for elf output
+
+ gbla version,release,modification
+&version seta 1
+&release seta 3
+&modification seta 0
+&threadchkw setc 'gcc390rt'
+&cgeye setc 'g390'
+
+ macro
+.* Do  something  for  all  floating  registers.  E.g., store or
+.* load.
+ allfpr &op,&addr
+ lcla &i
+.lp anop
+ &op &i,&i*8+&addr
+&i seta &i+1
+ aif (&i lt 16).lp
+ mend
+
+ macro
+ begin &ep,&base=,&save=12,&sp=13,&frame=
+ gblb &seensave
+ gblc &baser,&saver,&stackp
+&saver setc '&save'
+&stackp setc '&sp'
+ enter &ep
+&baser setc '&base' After enter has stepped on it
+ stm &save,15,8(15)
+&seensave setb 1
+ lr &sp,15
+ aif (k'&frame eq 0).nof
+ ahi 15,-&frame
+.nof anop
+ aif (k'&base eq 0).nob
+ balr &base,0
+ using *,&base
+.nob anop
+ mend
+
+ macro
+ enter &ep,&base=
+ gblb &seensave
+ gblc &baser
+&baser setc '&base'
+&seensave setb 0
+ dc 0d,cl8'&ep.'
+&ep ds 0d
+ entry &ep
+ aif (k'&base eq 0).x
+ balr &base,0
+ using *,&base
+.x mend
+
+ macro ,
+.* Load  our  core registers.  R4 to the user save area and 5 to
+.* the global area.
+ getregs &cmsgbl=4,&thread=5
+ getgbl reg=&cmsgbl
+ l &thread,cgtglobal
+ using cmsthreadglobal,&thread
+ mend
+
+ macro
+ leavelow   ,
+ gblb &seensave
+ gblc &baser,&saver,&stackp
+ aif (&seensave).go
+ mnote 4,'No save done; cannot restore'
+ ago .noload
+.go anop
+ lm &saver,15,8(&stackp)
+.noload anop
+ br 14
+ aif (k'&baser eq 0).nod
+ drop &baser
+.nod anop
+ mend
+
+ macro ,  Just the cms global
+ getgbl &reg=4,&qual=,&usersave=
+&ur setc '&reg'
+ aif (k'&usersave eq 0).haves
+&ur setc '&usersave.'
+.haves anop ,
+ using NUCON,0
+ l &ur.,CURRSAVE                 Get current SVCsave
+ drop 0
+ using SSAVE,&ur.
+ l &ur.,USAVEPTR
+ drop &ur.
+ using USERSAVE,&ur.
+ la &reg.,wheregoparms
+&qual using cmsgbl,&reg.
+ mend
+
+***********************************************************************
+*                                                                     *
+* Global data area at top of the stack.                               *
+*                                                                     *
+***********************************************************************
+
+cmsthreadglobal dsect ,
+ctgeye ds cl8 Eyecatcher
+ctgversion ds f
+ctgrelease ds f
+ctgdmodification ds f
+ctghead equ ctgeye,*-ctgeye To load
+ ds f Align
+*
+ctgsubpool ds cl8 Subpool to use
+ctgacmsgbl ds a Address of global
+* Resolved user parameters
+ctgstacksize ds f Stack size in 4K pages
+ctguardpage ds f Guard page location
+*
+ctguardkey ds x Key before we zeroed it
+ctgflag1 FLAGDEF NOENVIRONMENT, No environment (from globalv)          +
+               CMSACTIVE      Done a cmscall
+ ds 2x                          reserved
+*
+ctgrecursion ds f Recursion count
+ctgenvironment ds a Environment if built
+ctgcurrstack ds a Stack top
+ctgpstv ds a Pipeline services transfer vector
+*
+* The actual structure is larger.  Size to allocate is compiled
+* into const.c.  __cmstgs for this one
+
+* subcom?
+
+subc dsect
+subceye ds cl4
+subcgbl ds a
+
+ usersave
+ org USERSAVE+4*4   Interface to go.
+wheregoparms ds 0d We have 20 fullwords at our disposal.
+* This section is so gutsy that it should not be available to
+* C code.
+cmsgbl   DSECT ,              At wherego, but leave as separate        +
+                              in case we move it to the heap
+* This is cmslibglobal.h.  Keep in sync
+cgeye ds cl4'&cgeye.'
+cgcusersave ds a Address of usersave (currently *-16)
+cgtglobal DS   A              Thread global data area on top of        +
+                              active C stack frame block
+cgtcount ds a thread count
+cgxr0 ds f Original control register 0
+gsstacksize ds f Size allocated
+gsflag1 ds x Enum cmslibglobal
+cgmult ds 0d Multiple use
+* Interface to getstack
+gssubpool ds cl8 Subpool to use
+ org ,
+ ds 0d
+cgxr0w ds 0f Work area to update the reg
+cgplist ds 4d Parameter list for transient use
+cgplsize equ *-cgplist
+cgavail ds xl(4*20-(*-cmsgbl)) Spare
+cgavailable equ l'cgavail Let's see it
+cgsize equ *-cmsgbl
