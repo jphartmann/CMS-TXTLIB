@@ -1,8 +1,14 @@
 null.txtlib 1 files 0 members 1 card 0 pads.
+stor.txtlib 1 files 3 members 19 cards 0 pads.
+__STORX   00000002
+__INITCG  00000002
+__INITSP  00000002
 tod.txtlib 1 files 2 members 9 cards 0 pads.
 todn.txtlib 2 files 2 members 9 cards 0 pads.
-252.txtlib 1 files 4 members 257 cards 1 pads.
-253.txtlib 1 files 4 members 257 cards 0 pads.
+252.txtlib 1 files 6 members 258 cards 1 pads.
+253.txtlib 1 files 6 members 258 cards 0 pads.
 390.maclib 1 files 1 members.
 stacked.maclib 1 files 3 members.
 notstacked.maclib 1 files 1 members.
+__TOD390  00000002
+__TIMEV   00000002

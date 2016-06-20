@@ -134,8 +134,8 @@ doesd(struct card * crd)
    {
       struct esditem * ei = crd->d.esd + i;
 
-      if (1 < ei[i].type) continue;            /* Not SD or LD */
-      memcpy(de.name, ei[i].symbol, 8);
+      if (1 < ei->type) continue;     /* Not SD or LD                */
+      memcpy(de.name, ei->symbol, 8);
       if (currdir->count * 5 <= currdir->members)
       {
          if (!currdir->next)
