@@ -26,7 +26,10 @@
 
 static int fdin;
 
-static unsigned char ldt[84] = {0x61, 0xff, 0xff, 0x61, 2, 0xd3, 0xc4, 0xe3,};
+/* The  LDT  card  must have blanks.  Otherwise the text is taken as */
+/* the entry point.                                                  */
+static unsigned char ldt[84] =
+{0x61, 0xff, 0xff, 0x61, 2, 0xd3, 0xc4, 0xe3,};
 /* item is zeroed by END card; flag for make new member           */
 static struct dirent de = {.flag = 0x80, .beitem[3] = 2, };
 static struct file * currfile;
@@ -56,6 +59,7 @@ main(int argc, char ** argv)
    int fsize;
    int ix;
 
+   memset(ldt + 8, 0x40, sizeof(ldt) - 8);
    if (3 > argc)
       return fprintf(stderr, "Specify library file name and text file name(s).\n"), 1;
    if (openout(argv[1])) return 16;
