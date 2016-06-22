@@ -1,0 +1,8 @@
+*.o
+stdout
+stderr
+*.txtlib
+*.maclib
+maclib
+txtlib
+libdir
