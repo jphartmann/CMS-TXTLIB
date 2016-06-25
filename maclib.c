@@ -24,6 +24,8 @@
 
 static unsigned char sep[80] = {0x61, 0xff, 0xff, 0x61};
 static const int cards = 100;
+static FILE * f;
+static char line[256];
 
 const unsigned char tab819to1047[256]={
 /*                                     6           8                 */
@@ -50,6 +52,7 @@ static int doline(const char * s);
 static int loadname(const char * name, int len);
 static int newmember(char * s);
 static int eom();
+static char * gline(void);
 /* End of forward declarations.                                      */
 
 #include "subs.c"
@@ -72,15 +75,12 @@ main(int argc, char ** argv)
 
    for (ix = 2; argv[ix]; ix++)
    {
-      FILE * f;
       char * dot;
       char * slash;
       char * name;
       int namelen;
       int ismacro = 1;                /* Assume file is macro        */
-      char line[256];
       char * s;
-      int len;
 
       fn = argv[ix];
       f = fopen(fn, "r");
@@ -97,11 +97,9 @@ main(int argc, char ** argv)
          if (!strcmp(dot + 1, "copy")) ismacro = 0;
       }
 
-      s = fgets(line, sizeof(line), f);
-      if (!s) continue;               /* Null file                   */
-      len = strlen(s);
-      if ('\n' == s[len - 1]) s[len - 1] = 0;
-      if (!ismacro && memcmp(s, "*COPY ", 5)) ismacro = 1;   /* Not stacked copy */
+      s = gline();
+      if (!s) continue;
+      if (!ismacro && memcmp(s, "*COPY ", 6)) ismacro = 1;   /* Not stacked copy */
       if (ismacro)
       {
          loadname(name, namelen);
@@ -110,9 +108,9 @@ main(int argc, char ** argv)
       else if (newmember(s)) return 20;
       for (;;)
       {
-         s = fgets(line, sizeof(line), f);
+         s = gline();
          if (!s) break;
-         if (!ismacro && !memcmp(s, "*COPY ", 5))
+         if (!ismacro && !memcmp(s, "*COPY ", 6))
          {
             if (eom()) return 20;
             if (newmember(s)) return 20;
@@ -126,6 +124,22 @@ main(int argc, char ** argv)
    printf("%s %d files %d members.\n",
       fno, ix - 2, members);
    return 0;
+}
+
+/*********************************************************************/
+/* Read a line and remove the newline.                               */
+/*********************************************************************/
+
+static char *
+gline(void)
+{
+   char * s = fgets(line, sizeof(line), f);
+   int len;
+
+   if (!s) return s;                  /* Null file                   */
+   len = strlen(s);
+   if ('\n' == s[len - 1]) s[len - 1] = 0;
+   return s;
 }
 
 /*********************************************************************/
